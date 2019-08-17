@@ -2,13 +2,12 @@
 
 # Lab 1: Creating a Blockchain
 
-| Lab 1:		| Creating a Blockchain	|
-| -------------------- 	| ------------------------------------- |
-| Subject: 		| DAT650  Blockchain Technology  		|
-| Deadline:		| 		|
-| Expected effort:	|  				|
-| Grading: 		| Pass/fail + Lab Exam 			|
-| Submission: 	| 					|
+| Lab 1:                | Creating a Blockchain        |
+| --------------------  | ---------------------------- |
+| Subject:              | DAT650 Blockchain Technology |
+| Deadline:             | 06. SEP                      |
+| Expected effort:      | 2 weeks                      |
+| Grading:              | Pass/fail                    |
 
 ## Table of Contents
 
@@ -20,6 +19,14 @@
     - [Blockchain](#blockchain)
   - [Part 2](#part-2)
     - [Merkle Tree](#merkle-tree)
+  - [Part 3](#part-3)
+    - [Address Generation](#address-generation)
+      - [Public-key Cryptography](#public-key-cryptography)
+      - [Digital Signatures](#digital-signatures)
+      - [Base58](#base58)
+      - [Implementing Addresses](#implementing-addresses)
+      - [Implementing Signatures](#implementing-signatures)
+    - [Sending simple transactions](#sending-simple-transactions)
   - [Demo Application](#demo-application)
   - [Lab Approval](#lab-approval)
 
@@ -128,8 +135,10 @@ We did that in the function `HashTransactions` in the `block.go` file, by gettin
 But besides uniquely identify all the transactions in a block by a single hash, for efficiency, we also want to be able to easily verify if some transaction is in the block without requiring to have all the block transactions.
 
 [Merkle trees](https://xlinux.nist.gov/dads/HTML/MerkleTree.html) are used by [Bitcoin](https://bitcoin.org/bitcoin.pdf) to obtain transactions hash, which is then saved in block headers and is considered by the proof-of-work system.
-The benefit of Merkle trees is that a node can verify membership of certain transaction without downloading the whole block, just using the transaction hash, the Merkle Tree root hash, and the Merkle Path for that transaction.
-The inclusion verification of a transaction is called _Merkle proof_.
+The benefit of Merkle trees is that a node can verify membership of certain transaction without downloading the whole block, just using the transaction hash, the root hash of the merkle tree, and a set of intermediate hashes necessary to reconstruct the merkle path for that transaction, which is know as merkle proof.
+The Merkle path is simply the set of hashes from the transaction at the leaf node to the Merkle root.
+A Merkle proof is a way of proving that a certain transaction is part of a merkle tree without requiring any of the other transactions to be exposed, just the hashes.
+Each hash in the proof is the sibling of the hash in the path at the same level in the tree.
 
 This optimization mechanism is crucial for the successful adoption of Bitcoin or any [permissionless blockchain](https://eprint.iacr.org/2017/375.pdf).
 For example, the full Bitcoin database (i.e., blockchain) currently takes [more than 230 Gb of disk space](https://www.blockchain.com/charts/blocks-size).
@@ -145,7 +154,7 @@ This mechanism allows having multiple light nodes with running just one full nod
 A Merkle tree is built for each block, and it starts with leaves (the bottom of the tree), where a leaf is a transaction hash (Bitcoin uses double SHA256 hashing).
 In a [Perfect Binary Merkle Tree](https://xlinux.nist.gov/dads/HTML/perfectBinaryTree.html), as shown in the [Figure 1](#pmtree), every interior node has two children and all leaves have the same depth, but not every block contains an even number of transactions.
 In case there is an odd number of transactions, the hash of the last transaction is duplicated (in the [Tree](https://github.com/bitcoin/bitcoin/blob/d0f81a96d9c158a9226dc946bdd61d48c4d42959/src/consensus/merkle.cpp#L8), not in the block!) to form a [Full Binary Merkle Tree](https://xlinux.nist.gov/dads//HTML/fullBinaryTree.html), in which every node has either 0 or 2 children.
-This is shown in [Figure 2](#pmtree), where the nodes `23AF` and `5101` were duplicated during the process of build the tree.
+This is shown in [Figure 2](#fmtree), where the nodes `23AF` and `5101` were duplicated during the process of build the tree.
 
 ![Perfect Binary Merkle Tree][pmtree]
 
@@ -156,10 +165,12 @@ This process is repeated until there’s just one node, which is called the root
 The root hash is then used as the unique representation of the transactions, is saved in block headers, and is used in the proof-of-work system.
 
 Considering the example in [Figure 1](#pmtree).
-The numbers inside the nodes represent the first 4 bytes of the hash of that node.
+The numbers inside the nodes represent the first 4 bytes of the hash of the transaction of that node.
 Only leaf nodes store hash of real transactions, the internal nodes store the hash of its children.
-To find the Merkle Path of the leaf `3B5B` in red, the respective nodes in blue: `D2B8`, `64B0` and `4A3B` are required in this order.
-These blue nodes, altogether with their respective orientations on the tree (i.e, left or right side) will constitute a Merkle Proof that can be used to prove that the transaction `TX3` is in the block which the Merkle Root is represented by `38C4`.
+The merkle path from the transaction `TX3` to the root hash `38C4` is shown by the _yellow nodes_ on [Figure 1](#pmtree).
+
+The _blue nodes_ shows the set of the intermediate nodes (i.e, merkle proof) that can be used as proof to recreate the merkle path from the `TX3` to the root.
+Thus, given `TX3`, the root hash `38C4` and the respective _blue nodes_: `D2B8`, `64B0` and `4A3B`, in this order and altogether with their respective orientations on the tree (i.e, left or right side), is possible to show that `TX3` exists in the tree by hashing it with the intermediate nodes until find the same root.
 The same logic can be applied for the [Figure 2](#fmtree).
 
 ![Full Binary Merkle Tree][fmtree]
@@ -178,6 +189,18 @@ For more information about the concept of Merkle Trees, and the [Bitcoin impleme
 
 [pmtree]: perfect-merkle-tree.png "Figure 1"
 [fmtree]: full-merkle-tree.png "Figure 2"
+
+
+## Part 3
+
+###  Address Generation
+#### Public-key Cryptography
+#### Digital Signatures
+#### Base58
+#### Implementing Addresses
+#### Implementing Signatures
+
+### Sending simple transactions
 
 ## Demo Application
 Make a demo transaction between two generated addresses. Show the correspondent blocks where the transactions were added and the whole blockchain state in the end of the process. Can you identify any flaws in the current implementation? What kind of malicious attacks you can imagine?

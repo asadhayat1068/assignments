@@ -4,13 +4,13 @@ import (
 	"fmt"
 )
 
-// MerkleTree represents a Merkle tree
+// MerkleTree represents a merkle tree
 type MerkleTree struct {
 	RootNode *Node
 	Leafs    []*Node
 }
 
-// Node represents a Merkle tree node
+// Node represents a merkle tree node
 type Node struct {
 	Parent *Node
 	Left   *Node
@@ -23,10 +23,9 @@ const (
 	rightNode
 )
 
-// MerkleProof represents a merkle path required to prove element inclusion
-// on the merkle tree
+// MerkleProof represents way to prove element inclusion on the merkle tree
 type MerkleProof struct {
-	path  [][]byte
+	proof [][]byte
 	index []int64
 }
 
@@ -47,27 +46,28 @@ func (mt *MerkleTree) MerkleRootHash() []byte {
 	return mt.RootNode.Hash
 }
 
-// MerklePath returns a list of hashes and indexes required to
-// reconstruct the inclusion proof of a given hash
+// MakeMerkleProof returns a list of hashes and indexes required to
+// reconstruct the merkle path of a given hash
 //
 // @param hash represents the hashed data (e.g. transaction ID) stored on
 // the leaf node
-// @return the merkle path (list of hashes), a list of indexes indicating
-// the node location (leftNode or rightNode), and a possible error.
-func (mt *MerkleTree) MerklePath(hash []byte) ([][]byte, []int64, error) {
+// @return the merkle proof (list of intermediate hashes), a list of indexes
+// indicating the node location in relation with its parent (using the
+// constants: leftNode or rightNode), and a possible error.
+func (mt *MerkleTree) MakeMerkleProof(hash []byte) ([][]byte, []int64, error) {
 	// TODO(student)
-	return nil, nil, fmt.Errorf("Node %x not found", hash)
+	return [][]byte{}, []int64{}, fmt.Errorf("Node %x not found", hash)
 }
 
-// VerifyProof verify that the correct root hash can be retrieved by
-// properly hashing the given hash along with the merkle path in the
-// correct order
+// VerifyProof verifies that the correct root hash can be retrieved by
+// recreating the merkle path for the given hash and merkle proof.
 //
 // @param rootHash is the hash of the current root of the merkle tree
 // @param hash represents the hash of the data (e.g. transaction ID)
 // to be verified
-// @param mProof is the merkle proof that contains the list of hashes and
-// their indexes required to reconstruct the root hash
+// @param mProof is the merkle proof that contains the list of intermediate
+// hashes and their location on the tree required to reconstruct
+// the merkle path.
 func VerifyProof(rootHash []byte, hash []byte, mProof MerkleProof) bool {
 	// TODO(student)
 	return false
