@@ -19,15 +19,7 @@
     - [Blockchain](#blockchain)
   - [Part 2](#part-2)
     - [Merkle Tree](#merkle-tree)
-  - [Part 3](#part-3)
-    - [Address Generation](#address-generation)
-      - [Public-key Cryptography](#public-key-cryptography)
-      - [Digital Signatures](#digital-signatures)
-      - [Base58](#base58)
-      - [Implementing Addresses](#implementing-addresses)
-      - [Implementing Signatures](#implementing-signatures)
-    - [Sending simple transactions](#sending-simple-transactions)
-  - [Demo Application](#demo-application)
+  - [Command line client](#command-line-client)
   - [Lab Approval](#lab-approval)
 
 ## Introduction
@@ -191,22 +183,24 @@ For more information about the concept of Merkle Trees, and the [Bitcoin impleme
 [fmtree]: full-merkle-tree.png "Figure 2"
 
 
-## Part 3
+## Command line client
 
-###  Address Generation
-#### Public-key Cryptography
-#### Digital Signatures
-#### Base58
-#### Implementing Addresses
-#### Implementing Signatures
+Until now we don't have any interface to interact with the blockchain.
+Your task on this part is to create a command-line client application that will interact with your blockchain implementation.
 
-### Sending simple transactions
+You are free to choose any package that you prefer to do this task, using the standard go package [flag](https://golang.org/pkg/flag/) or some command-line library like [Cobra](https://github.com/spf13/cobra), it's up to you.
 
-## Demo Application
-Make a demo transaction between two generated addresses. Show the correspondent blocks where the transactions were added and the whole blockchain state in the end of the process. Can you identify any flaws in the current implementation? What kind of malicious attacks you can imagine?
+Independent of your choice, the command-line application should offer the following commands:
+
+* createblockchain: Creates a blockchain initializing it with the genesis block.
+* addblock: Adds a block to the blockchain. Receive the transactions data as parameter.
+* printchain: Prints all the blocks of the blockchain.
 
 ## Lab Approval
 
-To have your lab assignment approved, you must come to the lab during lab hours and present your solution. This lets you present the thought process behind your solution, and gives us more information for grading purposes and we may also provide feedback on your solution then and there. When you are ready to show your solution, reach out to a member of the teaching staff. It is expected that you can explain your code and show how it works. You may show your solution on a lab workstation or your own computer.
+To have your lab assignment approved, you must come to the lab during lab hours and present your solution. This lets you present the thought process behind your solution, and gives us more information for grading purposes and we may also provide feedback on your solution then and there.
+When you are ready to show your solution, reach out to a member of the teaching staff. It is expected that you can explain your code and show how it works. You may show your solution on a lab workstation or your own computer.
 
-You should for this lab present a working demo of the application described in the previous section making a transaction between two addresses. You should demonstrate that your implementation fulfills the previously listed specification of each assignments part. The task will be verified by a member of the teaching staff during lab hours.
+You should for this lab present a working demo of the application described in the previous section making a command-line client.
+You should demonstrate that your implementation fulfills the previously listed specification of each assignments part.
+The task will be verified by a member of the teaching staff during lab hours.
