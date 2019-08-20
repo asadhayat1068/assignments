@@ -1,5 +1,5 @@
 # assignments
-[DAT650](https://github.com/dat650-2019/course-info)Blockchain technology course assignments
+[DAT650](https://github.com/dat650-2019/course-info) Blockchain technology course assignments
 
 ### Lab Schedule (subject to change)
 
