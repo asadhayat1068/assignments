@@ -19,7 +19,9 @@
     - [Blockchain](#blockchain)
   - [Part 2](#part-2)
     - [Merkle Tree](#merkle-tree)
-  - [Command line client](#command-line-client)
+  - [Part 3](#part-3)
+    - [Command line client](#command-line-client)
+    - [Merkle tree benchmarks](#merkle-tree-benchmarks)
   - [Lab Approval](#lab-approval)
 
 ## Introduction
@@ -44,9 +46,7 @@ their own sections.
    to verify membership of certain transactions in a block using [Merkle Trees](https://en.wikipedia.org/wiki/Merkle_tree). 
    Use the provided skeleton code and unit tests.
 
-3. **Address generation:** Implement a address mechanism to uniquely identify
-   transaction owners.
-   Use the provided skeleton code and unit tests.
+3. **Command line client and benchmarks**
 
 For each part of the assignment you should copy your implementation of the previous part. But **do not copy the tests**, they can differ from each part, copy only your implementation. If you prefer, you can create a new branch for each part of the assignment.
 
@@ -78,9 +78,9 @@ Each block is linked to the previous one using a hash function.
 The way hashes are calculates is very important feature of blockchain, and it’s this feature that makes blockchain secure.
 The thing is that calculating a hash is a computationally difficult operation, it takes some time even on fast computers.
 This is an intentional architectural design of blockchain systems, which makes adding new blocks difficult, thus preventing their modification after they’re added.
-We’ll discuss and implement this mechanism in the [Lab2](../lab2/README.md).
+We’ll discuss and implement this mechanism in the [Lab 3](../lab3/README.md).
 
-For now, you will just take block fields (i.e. headers), concatenate them, and calculate a SHA-256 hash on the concatenated combination. To do that, use the `SetHash` function.
+For now, you will just take block fields (i.e. headers), concatenate them, and calculate a SHA-256 hash on the concatenated combination. To do that, use the `SetHash` function. Feed the `PrevBlockHash`, `Transactions`, and `Timestamp` into the hash in this order. 
 
 To compute the SHA-256 checksum of the data you can use the [Sum256](https://golang.org/pkg/crypto/sha256/#Sum256) function from the go crypto package.
 
@@ -96,7 +96,6 @@ This structure allows to quickly get the latest block in a chain and to get a bl
 
 In Golang this structure can be implemented by using an array and a map: the array would keep ordered hashes (arrays are ordered in Go), and the map would keep hash to block pairs (maps are unordered).
 But for now, in your blockchain prototype you just need to use an array as shown below.
-In [Lab3](../lab3/README) we will add a persistence layer and no longer use an array and/or map.
 
 ```go
 type Blockchain struct {
@@ -182,8 +181,9 @@ For more information about the concept of Merkle Trees, and the [Bitcoin impleme
 [pmtree]: perfect-merkle-tree.png "Figure 1"
 [fmtree]: full-merkle-tree.png "Figure 2"
 
+## Part 3
 
-## Command line client
+### Command line client
 
 Until now we don't have any interface to interact with the blockchain.
 Your task on this part is to create a command-line client application that will interact with your blockchain implementation.
@@ -193,12 +193,25 @@ You are free to choose any package that you prefer to do this task, using the st
 Independent of your choice, the command-line application should offer the following commands:
 
 * createblockchain: Creates a blockchain initializing it with the genesis block.
-* addblock: Adds a block to the blockchain. Receive the transactions data as parameter.
+* addtransaction: Adds a transaction data (e.g. an input string) to a buffer but does not create a block.
+* addblock: Adds a block to the blockchain committing the transactions in the buffer.
 * printchain: Prints all the blocks of the blockchain.
+
+### Merkle tree benchmarks
+
+Extend the merkle tree test file with two benchmarks. 
+Check this post for a [tutorial](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go) on writing benchmarks in Go.
+
+* Write a benchmark function for the creation of Merkle trees. 
+Benchmark the creation of a Merkle tree with 100, 1000 and 10000 data items.
+Each data item should be unique, but of constant size.
+* Write a benchmark function for the validation of merkle proofs.
+Benchmark how long it takes to validate a Merkle proof from trees includeing 100, 1000 and 10000 data item.
+
 
 ## Lab Approval
 
-To have your lab assignment approved, you must come to the lab during lab hours and present your solution. This lets you present the thought process behind your solution, and gives us more information for grading purposes and we may also provide feedback on your solution then and there.
+To have your lab assignment approved, you must come to the lab during lab hours and present your solution. This lets you present the thought process behind your solution, and allows us to provide feedback on your solution then and there.
 When you are ready to show your solution, reach out to a member of the teaching staff. It is expected that you can explain your code and show how it works. You may show your solution on a lab workstation or your own computer.
 
 You should for this lab present a working demo of the application described in the previous section making a command-line client.
