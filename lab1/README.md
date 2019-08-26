@@ -5,7 +5,7 @@
 | Lab 1:                | Creating a Blockchain        |
 | --------------------  | ---------------------------- |
 | Subject:              | DAT650 Blockchain Technology |
-| Deadline:             | 06. SEP                      |
+| Deadline:             | 05. SEP                      |
 | Expected effort:      | 2 weeks                      |
 | Grading:              | Pass/fail                    |
 
