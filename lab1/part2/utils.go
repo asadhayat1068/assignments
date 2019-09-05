@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/hex"
+	"log"
 )
 
 // HexSlice2ByteSlice returns a slice of hex string hashes as byte slice.
