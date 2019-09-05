@@ -31,6 +31,7 @@ func NewGenesisBlock(coinbase *Transaction) *Block {
 func (b *Block) SetHash() {
 	var headers []byte
 	// TODO(student) -- YOU DON'T NEED TO CHANGE YOUR PREVIOUS METHOD
+	// Use the function IntToHex in utils.go to converts the timestamp to a byte array. In the first lab we just used strconv for simplicity.
 	//  - b.HashTransactions() need to be used here when combining the block header data.
 	//  - You should set the block hash to be the hash of the header, so the line below should be changed.
 	b.Hash = headers[:]

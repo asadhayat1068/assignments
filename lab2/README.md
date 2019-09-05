@@ -217,7 +217,10 @@ A small description of what each function should do is given below:
 
 ## Demo Application
 
-Extend your client application of lab 1 to create two addresses and make a demo transaction between the two generated addresses. Show the correspondent blocks where the transactions were added and the whole blockchain state in the end of the process.
+Extend your client application of lab 1 to create two addresses and make a demo transaction between the two generated addresses. Show the correspondent blocks where the transactions were added and the whole blockchain state in the end of the process. Create a command to get and show the current balance of both addresses based on the UTXO of each one.
+
+The `getBalance` function should receive a address and the current UTXO set and return the balance.
+
 
 ## Lab Approval
 
