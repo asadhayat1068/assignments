@@ -162,14 +162,14 @@ func TestNewCoinbaseTX(t *testing.T) {
 	// Passing data to the coinbase transaction
 	tx := NewCoinbaseTX("leander", "test")
 	assert.True(t, tx.IsCoinbase())
-	assert.Equal(t, tx.Vin[0].ScriptSig, "test")
+	assert.Equal(t, "test", tx.Vin[0].ScriptSig)
 
 	// Using default data
 	tx = NewCoinbaseTX("leander", "")
 	assert.True(t, tx.IsCoinbase())
-	assert.Equal(t, tx.Vin[0].ScriptSig, "Reward to leander")
-	assert.Equal(t, tx.Vout[0].Value, BlockReward)
-	assert.Equal(t, tx.Vout[0].ScriptPubKey, "leander")
+	assert.Equal(t, "Reward to leander", tx.Vin[0].ScriptSig)
+	assert.Equal(t, BlockReward, tx.Vout[0].Value)
+	assert.Equal(t, "leander", tx.Vout[0].ScriptPubKey)
 }
 
 func TestNewUTXOTransaction(t *testing.T) {
