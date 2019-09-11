@@ -200,7 +200,7 @@ A small description of what each function should do is given below:
 - `Transaction.NewCoinbaseTX`: creates a new _coinbase_ transaction.
 - `Transaction.NewUTXOTransaction`: creates a new transaction by getting a list of spendable outputs to be used and the current balance of the sender. It also checks if the sender sufficient funds to perform the transaction.
 - `Transaction.IsCoinbase`: test if a transaction is _coinbase_.
-- `Transaction.Hash`: hash the serialized representation of a transaction.
+- `Transaction.Hash`: hash the serialized copy of a transaction ignoring the ID field, since the return of this function is the new ID of a transaction. **Before** serialize the transaction, make sure to ignore any existent data in the ID field (i.e., set ID in the copy to []byte{}).
 - `Transaction.Serialize`: encodes the transaction struct using the [gob](https://golang.org/pkg/encoding/gob/) library.
 
 - `Blockchain.FindUTXOSet`: finds all unspent outputs by iterating over all blocks. Returns an UTXO set.
