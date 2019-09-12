@@ -197,12 +197,12 @@ The account balance is the sum of values of all UTXO locked by the account addre
 Your task is implement all functions marked with `TODO(student)` on the lab code templates.
 A small description of what each function should do is given below:
 
+- `Block.HashTransactions`: Modify this method to use the result of the `Transaction.Serialize` method instead of just the `Data` field used in the previous lab, since now your transaction is more than just a byte slice.
 - `Transaction.NewCoinbaseTX`: creates a new _coinbase_ transaction.
 - `Transaction.NewUTXOTransaction`: creates a new transaction by getting a list of spendable outputs to be used and the current balance of the sender. It also checks if the sender sufficient funds to perform the transaction.
 - `Transaction.IsCoinbase`: test if a transaction is _coinbase_.
 - `Transaction.Hash`: hash the serialized copy of a transaction ignoring the ID field, since the return of this function is the new ID of a transaction. **Before** serialize the transaction, make sure to ignore any existent data in the ID field (i.e., set ID in the copy to []byte{}).
-- `Transaction.Serialize`: encodes the transaction struct using the [gob](https://golang.org/pkg/encoding/gob/) library.
-
+- `Transaction.Serialize`: encodes the transaction struct using the [gob](https://golang.org/pkg/encoding/gob/) library. This method should not ignore the ID of the transaction, the whole transaction fields should be serialized.
 - `Blockchain.FindUTXOSet`: finds all unspent outputs by iterating over all blocks. Returns an UTXO set.
 - `Blockchain.FindTransaction`: finds a transaction in the blockchain by its ID. It iterates over all blocks until finds it.
 - `Blockchain.VerifyTransaction`: verifies if the referred inputs of a given transaction exist in the blockchain, discard invalid transactions that make reference to unknown inputs.
