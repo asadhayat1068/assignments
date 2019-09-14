@@ -13,8 +13,7 @@ type Blockchain struct {
 
 // CreateBlockchain creates a new blockchain with genesis Block
 func CreateBlockchain(address string) *Blockchain {
-	// TODO(student)
-	// ADD the creation of the initial UTXO set
+	// TODO(student) -- YOU DON'T NEED TO CHANGE YOUR PREVIOUS METHOD
 	return nil
 }
 
