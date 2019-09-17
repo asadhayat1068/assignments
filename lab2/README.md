@@ -5,7 +5,7 @@
 | Lab 2:                | UTXO                         |
 | --------------------  | ---------------------------- |
 | Subject:              | DAT650 Blockchain Technology |
-| Deadline:             | 12. SEP                      |
+| Deadline:             | 26. SEP                      |
 | Expected effort:      | 2 weeks                      |
 | Grading:              | Pass/fail                    |
 
@@ -20,6 +20,13 @@
     - [Transaction Inputs](#transaction-inputs)
     - [The egg](#the-egg)
     - [Unspent Transaction Output Set](#unspent-transaction-output-set)
+  - [Part 2](#part-2)
+    - [Address](#address)
+      - [Public-key Cryptography](#public-key-cryptography)
+      - [Digital Signatures](#digital-signatures)
+      - [Base58](#base58)
+      - [Updating transactions](#updating-transactions)
+      - [Implementing Signatures](#implementing-signatures)
   - [Demo Application](#demo-application)
   - [Lab Approval](#lab-approval)
 
@@ -215,12 +222,259 @@ A small description of what each function should do is given below:
 [btctransactions]: btc-transactions.svg "Figure 3"
 [utxo]: utxo.png "Figure 4"
 
+## Part 2
+
+As in Bitcoin there are no user accounts and your personal data (e.g., name, passport number) is not required and not stored anywhere.
+But there still must be something that identifies you as the owner of transaction outputs (i.e. the owner of coins locked on these outputs).
+And this is what Bitcoin addresses are needed for.
+
+So far we've used arbitrary user defined strings as addresses, and the time has come to implement real addresses, as they're implemented in Bitcoin
+
+###  Address
+
+A [Bitcoin address](https://en.bitcoin.it/wiki/Address) is a string of digits and characters that can be shared with anyone who wants to send you money.
+They are public and the most famous address in Bitcoin is `1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa`, what is the very first address, which allegedly belongs to Satoshi Nakamoto, the Bitcoin creator.
+
+But addresses (despite being unique) are not something that identifies you as the owner of a _wallet_.
+In fact, such addresses are a human readable representation of public keys, and consist of a string of numbers and letters, beginning with the digit "1".
+In Bitcoin, your identity is a pair (or pairs) of private and public keys stored on your computer (or stored in some other place you have access to).
+Bitcoin relies on a combination of cryptography algorithms to create these keys, and guarantee that no one else in the world can access your coins without getting physical access to your keys.
+
+#### Public-key Cryptography
+
+[Public-key cryptography](https://en.wikipedia.org/wiki/Public-key_cryptography) algorithms use pairs of keys: public keys and private keys.
+Public keys are not sensitive and can be disclosed to anyone.
+In contrast, private keys shouldn't be disclosed: no one but the owner should have access to them because it's private keys that serve as the identifier of the owner.
+The private keys of an user are his identities in the world of cryptocurrencies.
+
+In essence, a Bitcoin wallet is just a pair of such keys.
+When you install a wallet application or use a Bitcoin client to generate a new address, a pair of keys is generated for you.
+The one who controls the private key controls all the coins sent to this key in Bitcoin.
+
+Private and public keys are just random sequences of bytes, thus they cannot be printed on the screen and read by a human.
+That's why Bitcoin uses the [Base58](https://en.bitcoin.it/wiki/Base58Check_encoding) algorithm to convert public keys into a human readable string.
+We will see how to implement it soon, but first we will see how does Bitcoin check the ownership of coins.
+
+#### Digital Signatures
+
+Bitcoin uses [digital signatures](https://en.wikipedia.org/wiki/Digital_signature) for verifying the authenticity of the transactions, making using of asymmetric cryptography to guarantee:
+
+* that data wasn't modified while being transferred from a sender to a recipient;
+* that data was created by a certain sender;
+* that the sender cannot deny sending the data.
+
+By applying a signing algorithm to data (i.e., signing the data), one gets a signature, which can later be verified.
+Digital signing happens with the usage of a private key, and verification requires a public key.
+
+In order to sign data we need the following things:
+
+1. data to sign;
+2. private key.
+
+The operation of signing produces a signature, which is stored in transaction inputs.
+In order to verify a signature, the following is required:
+
+1. data that was signed;
+2. the signature;
+3. public key.
+
+In simple terms, the verification process can be described as: check that this signature was obtained from this data with a private key used to generate the public key.
+
+Note that digital signatures are not encryption, you cannot reconstruct the data from a signature.
+This is similar to hashing: you run data through a hashing algorithm and get a unique representation of the data.
+The difference between signatures and hashes is key pairs: they make signature verification possible.
+But key pairs can also be used to encrypt data: a private key is used to encrypt, and a public key is used to decrypt the data.
+Bitcoin doesn't use encryption algorithms though, only your wallet that can potentially encrypt your keys.
+
+Every transaction input in Bitcoin is signed by the one who created the transaction.
+Every transaction in Bitcoin must be verified before being put in a block.
+Verification means (besides other procedures):
+
+1. Checking that inputs have permission to use outputs from previous transactions.
+2. Checking that the transaction signature is correct.
+
+More information about digital signatures and how Bitcoin use it can be found [here](https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch04.asciidoc#introduction).
+But in this lab is the file `wallet.go` that will store the user private and public keys.
+The wallet struct is nothing but the following key pair.
+
+```go
+type Wallet struct {
+	PrivateKey ecdsa.PrivateKey
+	PublicKey  []byte
+}
+```
+
+In the construction function of Wallet a new key pair is generated.
+The `newKeyPair` function is responsible to generate the key pair using the same algorithm used by Bitcoin to digitally sign transactions, the _ECDSA_ (Elliptic Curve Digital Signature Algorithm).
+If you want to know more about elliptic curves and their use, you can check out this [tutorial](https://andrea.corbellini.name/2015/05/17/elliptic-curve-cryptography-a-gentle-introduction/).
+
+The `newKeyPair` function will use the go standard package [elliptic](https://golang.org/pkg/crypto/elliptic/#P256) to create a P-256 elliptic curve, and for the purpose of this lab, you just need to know that this and other types of curves can be used to generate really big and random numbers on elliptic curves cryptosystems, and that the private and public keys are based on that numbers. 
+
+The private key will be generated using the generated curve by calling the function `GenerateKey` from the go standard package [ecdsa](https://golang.org/pkg/crypto/ecdsa/#GenerateKey), and the public key will be generated from the private key.
+In [elliptic curve based algorithms](https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch04.asciidoc#elliptic-curve-cryptography-explained), public keys are points on a curve, thus, a public key is a combination of X, Y coordinates.
+In Bitcoin, these coordinates are concatenated and form a public key.
+So we will do the same in our implementation to generate the public key, concatenating the X and Y coordinates of the `ecdsa.PublicKey` field in the private key.
+
+But we said previously that addresses are based on public keys, but how the addresses are generated?
+
+#### Base58
+
+We know so far that the address `18ZrMdiBrvtKhV9TqH4YXmBGDCwqxCBLwT` is a human-readable representation of a public key.
+And if we decode it, here's what the public key looks like (as a sequence of bytes written in the hexadecimal system):
+
+```
+0052ff643039009a75c98ea449a3155b6629757c03fa7f72a2
+```
+
+Bitcoin uses the [Base58](https://en.bitcoin.it/wiki/Base58Check_encoding) algorithm to convert public keys into human readable format.
+The algorithm is very similar to famous [Base64](https://en.wikipedia.org/wiki/Base64), but it uses shorter alphabet: some letters were removed from the alphabet to avoid some attacks that use letters similarity.
+Thus, there are no these symbols: 0 (zero), O (capital o), I (capital i), l (lowercase L), because they look similar. Also, there are no + and / symbols.
+
+The process of getting an address from a public key is done by the function `GetAddress` in `wallet.go` that follows the algorithm described [here](https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses#How_to_create_Bitcoin_Address), and is illustrated in the [Figure 5](#btcaddress).
+
+![Bitcoin Address Generation][btcaddress]
+
+Thus, the above mentioned decoded public key consists of three parts:
+```
+Version  Public key hash                           Checksum
+00       52ff643039009a75c98ea449a3155b6629757c03  fa7f72a2
+```
+
+Since hashing functions are one way (i.e., they cannot be reversed), it's not possible to extract the public key from the hash.
+But we can check if a public key was used to get the hash by running it thought the save hash functions and comparing the hashes.
+
+As shown in [Figure 5](#btcaddress) the steps to convert a public key into a Base58 address are:
+
+1. Take the public key (i.e., resulted of the concatenation of X and Y coordinates) and hash it twice, applying the [RIPEMD160](https://en.wikipedia.org/wiki/RIPEMD) hashing algorithm to the result of _SHA256_ of the public key.
+   This will be done by calling the function `HashPubKey` shown in blue in the figure.
+2. Prepend the version of the address generation algorithm to the hash (i.e., version + PubKeyHash combination).
+3. Calculate the checksum by hashing the result of `step 2` with a double _SHA256_: `SHA256(SHA256(versionedPayload))`.
+   From the resulting 32-byte hash, we take only the _first four bytes_.
+   These four bytes serve as the error-checking code, or checksum, shown in purple in the figure.
+   This operation will be done by the function `checksum` in the `wallet.go` file.
+4. Append the checksum to the versioned payload (i.e., version + PubKeyHash + checksum combination).
+5. Encode the `version + PubKeyHash + checksum` combination resulted of `step 4` with Base58.
+
+As a result, you'll get a real Bitcoin address, you can even check its balance on [blockchain.info](https://www.blockchain.com/btc/address/18ZrMdiBrvtKhV9TqH4YXmBGDCwqxCBLwT).
+But I can assure you that the balance will be 0 no matter how many times you generate a new address and check its balance.
+This is why choosing proper public key cryptography algorithm is so crucial: considering private keys are random numbers, the chance of generating the same number must be as low as possible.
+Ideally, it must be as low as "never".
+
+Also, pay attention that you don't need to connect to a Bitcoin node to get an address.
+The address generation algorithm utilizes a combination of open algorithms that are implemented in many programming languages and libraries.
+More information about the address generation can be found [here](https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch04.asciidoc#bitcoin-addresses).
+
+Now it's your turn, go to the `wallet.go` and implement all the functions to generate keys and addresses marked with `TODO(student)` on the code template. These functions are:
+
+- `NewWallet`: creates a new Wallet by generating a new key pair.
+- `newKeyPair`: generates a new key pair using the _P-256 curve_ and _ECDSA_ algorithm.
+- `CreateWallet`: create a wallet from a given ecdsa key pair.
+- `GetAddress`: computes the address based on the public key stored in the Wallet (i.e., algorithm previously described)
+- `HashPubKey`: computes the hash (RIPEMD160 + SHA256) of the public key (i.e., step 1).
+- `checksum`: computes the checksum of a given versioned payload, applying a double SHA256 hash algorithm to it (i.e., step 3).
+- `pubKeyToByte`: convert the generated `PublicKey` to a byte array concatenating the X and Y coordinates.
+- `GetPubKeyHashFromAddress`: returns the hash of the public key ignoring the version and the checksum.
+- `ValidateAddress`: checks if an address is valid by decoding the given address, extracting the current version, public key hash and the checksum, and re-computing the checksum. The address is valid only if the checksums match.
+
+The function `ValidateAddress` can be used to prevent a mistyped bitcoin address from being accepted by the wallet software as a valid destination when transfer some coin, an error that would otherwise result in loss of funds. You can also use some [online bitcoin addresses validators](http://lenschulwitz.com/base58) to compare your implementation.
+
+Now that you have implemented real addresses, let's modify the transaction inputs and outputs to use it.
+
+#### Updating transactions
+
+We will no longer use `ScriptPubKey` and `ScriptSig` fields, because we will not going to implement a scripting language for now.
+Instead, we will implement the same outputs locking/unlocking and inputs signing logics as in Bitcoin, but we’ll do this in methods instead.
+Thus the `ScriptSig` field of the `TXInput` struct will be split into `Signature` and `PubKey` fields, and `ScriptPubKey` field of the `TXOutput` struct will be renamed to `PubKeyHash`, as shown below.
+
+```go
+type TXInput struct {
+	Txid      []byte
+	OutIdx    int
+	Signature []byte
+	PubKey    []byte
+}
+
+type TXOutput struct {
+	Value      int
+	PubKeyHash []byte
+}
+```
+
+We will replace the method `CanUnlockOutputWith` in the `transaction_input.go` by the `UsesKey` method, that will checks that an input uses a specific key to unlock an output.
+Notice that inputs store raw public keys (i.e., not hashed), but the function takes a hashed one as a parameter and compares it with the hashed version of the `PubKey` on the input.
+Before, we were just comparing strings.
+
+We will do a similar replacement for the outputs, removing the function `CanBeUnlockedWith` and replacing by `IsLockedWithKey`, that will checks if the provided public key hash was used to lock the output.
+This is a complementary function to `UsesKey`, and they're both used to build connections between transactions.
+
+We will also add a new function to the `transaction_output.go` named `Lock`, which simply locks an output.
+When we send coins to someone, we know only their address, thus the function takes an address as the only argument.
+The address is then decoded and the public key hash is extracted from it and saved in the `PubKeyHash` field.
+This mechanism "lock" the transaction output to a specific address, giving the ownership of the output to the specific address.
+
+#### Implementing Signatures
+
+Transactions must be signed because this is the only way in Bitcoin to guarantee that one cannot spend coins belonging to someone else.
+If a signature is invalid, the transaction is considered invalid too and, thus, cannot be added to the blockchain.
+
+We have all the pieces to implement transactions signing, except one thing: data to sign.
+What parts of a transaction are actually signed? Or a transaction is signed as a whole? 
+Choosing data to sign is quite important.
+
+The thing is that data to be signed must contain information that identifies the data in a unique way.
+For example, it makes no sense signing just output values because such signature won't consider the sender and the recipient.
+
+Considering that transactions unlock previous outputs, redistribute their values, and lock new outputs, the following data must be signed:
+
+* Public key hashes stored in unlocked outputs. This identifies "sender" of a transaction.
+* Public key hashes stored in new, locked, outputs. This identifies "recipient" of a transaction.
+* Values of new outputs.
+
+In Bitcoin, locking/unlocking logic is stored in scripts, which are stored in ScriptSig and ScriptPubKey fields of inputs and outputs, respectively. Since Bitcoins allows different types of such scripts, it signs the whole content of ScriptPubKey.
+
+As you can see, we don't need to sign the public keys stored in inputs.
+Because of this, in Bitcoin, it's not a transaction that's signed, but its trimmed copy with inputs storing ScriptPubKey from referenced outputs.
+A detailed process of getting a trimmed transaction copy is described [here](https://en.bitcoin.it/w/images/en/7/70/Bitcoin_OpCheckSig_InDetail.png).
+
+We will implement the `Sign` function in the `transaction.go` file.
+The function will take a private key and a map of previous transactions.
+As mentioned above, in order to sign a transaction, we need to access the outputs referenced in the inputs of the transaction, thus we need the transactions that store these outputs.
+But remember that _coinbase_ transactions are not signed because there are no real inputs in them.
+
+So the first thing is to check if the transaction is coinbase, and if not, if it has valid inputs, which means, inputs that reference existent transactions, otherwise an error should be generated.
+Then we will make a trimmed copy of the transaction to be signed, as we will not a full transaction.
+The copy will include all the inputs and outputs of the original transaction, but `TXInput.Signature` and `TXInput.PubKey` will be set to `nil` in the copy.
+
+Next, we need to iterate over each input in the *copy*, and in each input, set the `Signature` to `nil` (just to ensure that the Signature is `nil`) and `PubKey` to the `PubKeyHash` of the referenced output.
+At this moment, all transactions but the current one are "empty", i.e. their Signature and PubKey fields are set to nil.
+The trimmed copy is the data that we need to sign, and it need to be converted to byte array and give it, together with the private key, as input to the [ecdsa.Sign](https://golang.org/pkg/crypto/ecdsa/#PrivateKey.Sign) function from the go `crypto/ecdsa` library.
+An _ECDSA_ signature is a pair of numbers (`r` and `s`), which will be concatenated as bytes and stored in the input's `Signature` field for each input in the `txCopy.Vin`.
+To not affect further iterations, is a good idea to set the PubKey field to `nil` in the end of each iteration for each input.
+
+In the same file `transaction.go`, we will also create a function named `Verify` to check the signatures of transaction inputs from a list of transactions.
+As before, there is no need to verify the signatures of _coinbase_ transaction, since they don't have one, so in this case, just return `true`.
+If some of the inputs in the given list of transactions are invalid inputs, the transaction should be ignored, and an error generated.
+
+Thus, we will first get a trimmed copy of the same transaction.
+Next, we'll need to create the same curve that is used to generate key pairs (i.e., `elliptic.P256`).
+And check the signature in each input, by iterating over the list of inputs in the trimmed copy (i.e., `txCopy.Vin`).
+This piece is identical to the one in the `Sign` method, because during verification we need the same data what was signed, which means that we need to set the `Signature` field of the input in the copied transaction to `nil` and also `PubKey` to the `PubKeyHash` of the referenced output in the copied transaction.
+
+After that, we need to unpack the values of `TXInput.Signature` and `TXInput.PubKey` stored in the original transaction (*not the copied one*), since a signature is a pair of numbers and a public key is a pair of coordinates.
+And we concatenated them earlier for storing, and now we need to unpack them to use it as parameters to the [ecdsa.Verify](https://golang.org/pkg/crypto/ecdsa/#Verify) function.
+
+Thus, to extract `r` and `s` from the input `Signature`, as they are "big numbers" we will need to import the go [math/big](https://golang.org/pkg/math/big/#pkg-examples) package, and create two new Big Integers and assign to each one half of the Signature.
+Remember that we concatenated them in the `Sign` function, so now we need to split it in the same order.
+The same logic will be applied for the coordinates `X` and `Y` of the input `PubKey`.
+Thus, after performing all extractions of the signature and public key from the input, we pass them to the `ecdsa.Verify` function and check if all inputs are verified, if so then return true, if at least one input fails verification, return false.
+
+[btcaddress]: btc-address.png "Figure 5"
+
 ## Demo Application
 
-Extend your client application of lab 1 to create two addresses and make a demo transaction between the two generated addresses. Show the correspondent blocks where the transactions were added and the whole blockchain state in the end of the process. Create a command to get and show the current balance of both addresses based on the UTXO of each one.
+Extend your client application of lab 1 to create two addresses and make a demo transaction between them. Show the correspondent content of the blocks where the transactions were added and the whole blockchain state in the end of the process. Need to be possible to see the content of the transactions. Create a command to get and show the current balance of both addresses based on the UTXO of each one.
 
-The `getBalance` function should receive a address and the current UTXO set and return the balance.
-
+Thus, create a `getBalance` in your application. This function should receive an address and the current UTXO set and return the balance of the address.
 
 ## Lab Approval
 
