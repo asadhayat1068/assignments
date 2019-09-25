@@ -430,26 +430,24 @@ Considering that transactions unlock previous outputs, redistribute their values
 * Public key hashes stored in new, locked, outputs. This identifies "recipient" of a transaction.
 * Values of new outputs.
 
-In Bitcoin, locking/unlocking logic is stored in scripts, which are stored in ScriptSig and ScriptPubKey fields of inputs and outputs, respectively. Since Bitcoins allows different types of such scripts, it signs the whole content of ScriptPubKey.
+In Bitcoin, locking/unlocking logic is stored in _scripts_, which are stored in _ScriptSig_ and _ScriptPubKey_ fields of inputs and outputs, respectively. Since Bitcoins allows different types of such scripts, **it signs the whole content of _ScriptPubKey_**.
 
 As you can see, we don't need to sign the public keys stored in inputs.
-Because of this, in Bitcoin, it's not a transaction that's signed, but its trimmed copy with inputs storing ScriptPubKey from referenced outputs.
+Because of this, in Bitcoin, it's not a transaction that's signed, _but its trimmed copy with inputs storing ScriptPubKey from referenced outputs_.
 A detailed process of getting a trimmed transaction copy is described [here](https://en.bitcoin.it/w/images/en/7/70/Bitcoin_OpCheckSig_InDetail.png).
 
 We will implement the `Sign` function in the `transaction.go` file.
 The function will take a private key and a map of previous transactions.
-As mentioned above, in order to sign a transaction, we need to access the outputs referenced in the inputs of the transaction, thus we need the transactions that store these outputs.
+As mentioned above, in order to sign a transaction, we need to access the _outputs referenced in the inputs of the transaction_, thus we need the transactions that store these outputs.
 But remember that _coinbase_ transactions are not signed because there are no real inputs in them.
 
 So the first thing is to check if the transaction is coinbase, and if not, if it has valid inputs, which means, inputs that reference existent transactions, otherwise an error should be generated.
-Then we will make a trimmed copy of the transaction to be signed, as we will not a full transaction.
-The copy will include all the inputs and outputs of the original transaction, but `TXInput.Signature` and `TXInput.PubKey` will be set to `nil` in the copy.
+Then we will make a _trimmed copy_ of the transaction to be signed, as we will not sign transaction containing previous signatures.
+The copy will include all the inputs and outputs of the original transaction, but the `TXInput.Signature` and `TXInput.PubKey` will be set to `nil` in the copy.
 
-Next, we need to iterate over each input in the *copy*, and in each input, set the `Signature` to `nil` (just to ensure that the Signature is `nil`) and `PubKey` to the `PubKeyHash` of the referenced output.
-At this moment, all transactions but the current one are "empty", i.e. their Signature and PubKey fields are set to nil.
-The trimmed copy is the data that we need to sign, and it need to be converted to byte array and give it, together with the private key, as input to the [ecdsa.Sign](https://golang.org/pkg/crypto/ecdsa/#PrivateKey.Sign) function from the go `crypto/ecdsa` library.
-An _ECDSA_ signature is a pair of numbers (`r` and `s`), which will be concatenated as bytes and stored in the input's `Signature` field for each input in the `txCopy.Vin`.
-To not affect further iterations, is a good idea to set the PubKey field to `nil` in the end of each iteration for each input.
+Next, we need to iterate over each input in the *copy*, and for each input, ensure that the `Signature` is `nil` and set the `PubKey` of the input with the `PubKeyHash` of the referenced output that is in the `prevTXs`. This is the data that will be signed, i.e., that will be serialized and used as input to the [ecdsa.Sign](https://golang.org/pkg/crypto/ecdsa/#PrivateKey.Sign) function from the go `crypto/ecdsa` library. The resulted _ECDSA_ signature is a pair of numbers (`r` and `s`), which will be concatenated as bytes and stored in the input's `Signature` field for each input in the `txCopy.Vin`.
+
+Thus each input in the copy will be signed separately, since the all the `Signature` and `PubKey` field of the others inputs in the transaction are `nil` on each iteration, and only the one that is being signed have the `txCopy.Vin[in.txID].PubKey` set with the correspondent `PubKeyHash` of the output that is being spent. Note that to not affect further iterations, is a good idea to reset the `PubKey` field to `nil` in the end of each iteration for each input.
 
 In the same file `transaction.go`, we will also create a function named `Verify` to check the signatures of transaction inputs from a list of transactions.
 As before, there is no need to verify the signatures of _coinbase_ transaction, since they don't have one, so in this case, just return `true`.
@@ -458,7 +456,7 @@ If some of the inputs in the given list of transactions are invalid inputs, the 
 Thus, we will first get a trimmed copy of the same transaction.
 Next, we'll need to create the same curve that is used to generate key pairs (i.e., `elliptic.P256`).
 And check the signature in each input, by iterating over the list of inputs in the trimmed copy (i.e., `txCopy.Vin`).
-This piece is identical to the one in the `Sign` method, because during verification we need the same data what was signed, which means that we need to set the `Signature` field of the input in the copied transaction to `nil` and also `PubKey` to the `PubKeyHash` of the referenced output in the copied transaction.
+This piece is identical to the one in the `Sign` method, because during verification we need the same data what was signed, which means that we need to set the `Signature` field of the input in the copied transaction to `nil` and also `PubKey` to the `PubKeyHash` of the referenced output.
 
 After that, we need to unpack the values of `TXInput.Signature` and `TXInput.PubKey` stored in the original transaction (*not the copied one*), since a signature is a pair of numbers and a public key is a pair of coordinates.
 And we concatenated them earlier for storing, and now we need to unpack them to use it as parameters to the [ecdsa.Verify](https://golang.org/pkg/crypto/ecdsa/#Verify) function.
