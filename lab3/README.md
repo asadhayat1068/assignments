@@ -86,13 +86,13 @@ A small description of what each function should do is given below:
 
 ## Demo Application
 
-Create two addresses and start a transaction sending some coins between them like in the previous lab.
-Store the transaction in a buffer that will be used to create a block.
+Create two addresses (e.g. consider `A` and `B` as example) and start a transaction sending some coins from `A` to `B`, like in the previous lab.
+Need to be possible to specify the amount of coins to transfer.
+Store the transaction in a buffer that will be used to create a block later.
 
-Extend your client application to have a command to start mining and display the hash of each mining attempt until finding a solution. Show the hash in the hexadecimal format.
-You need to be able to mine the block containing the transaction that you made.
+Extend your client application to have a command to start mining until finding a solution. Show the hash found in the hexadecimal format.
 
-When you start mining, your client application must add a new coinbase transaction giving the miner address (e.g., can be the first address that you create) and create a block with this transaction as the first transaction in the block. Also include the transaction that you created initially, in the buffer, and use both transactions to mine the new block. This will confirm your transactions and transfer the coins.
+When you start mining, your client application *must* add a new coinbase transaction assigning the mining reward to the miner address, let's say `A`, and create a block containing this transaction as the first transaction and the transaction that sends coins from `A` to `B` as the second. You need to be able to mine the block containing both transactions and show the balance of each address in the end, including the mining reward for `A`. 
 
 You will be requested to display the block and transactions information.
 
