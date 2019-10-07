@@ -25,8 +25,8 @@ All tests should pass, but you can add as many functions you need.
 
 ## Tools
 
-For this lab you will require to have [Truffle Suite]() installed in your machine.
-It is also desirable that you have [Ganache]() installed or any other develop blockchain configured, with at least two accounts, to perform correctly the tests.
+For this lab you will require to have [Truffle Suite](https://www.trufflesuite.com/docs/truffle/overview) installed in your machine.
+It is also desirable that you have [Ganache](https://www.trufflesuite.com/docs/ganache/overview) installed or any other develop blockchain configured, with at least two accounts, to perform correctly the tests.
 
 Both assignments have a `package.json` file with the dependencies and scripts for easy development, including truffle and ganache-cli, that can be installed locally using the `npm`.
 
@@ -63,9 +63,9 @@ Please check that your Ethereum client:
 ```
 
 It means that you need to have running a blockchain instance in another terminal.
-There are many options for perform that, and you can find more information [here]().
+There are many options for perform that, and you can find more information [here](https://www.trufflesuite.com/docs/truffle/reference/choosing-an-ethereum-client).
 For the purpose of this lab, we will be using the `ganache` GUI or the `ganache-cli` command, both with same setup.
-More information about the ganache configuration can be found [here]()
+More information about the ganache configuration can be found [here](https://www.trufflesuite.com/docs/ganache/truffle-projects/linking-a-truffle-project)
 
 ```
 $ ganache-cli --deterministic --networkId 5777 --host 127.0.0.1 --port 7545
