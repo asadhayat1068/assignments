@@ -31,7 +31,7 @@ const App = {
     },
 
     deposit: async function () {
-        const amount = parseInt(document.getElementById("depositAmount").value);
+        const amount = document.getElementById("depositAmount").value;
 
         this.setStatus("Initiating transaction... (please wait)");
 

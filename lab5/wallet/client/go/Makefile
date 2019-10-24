@@ -12,6 +12,10 @@ GOTEST = $(GOCMD) test
 GOGET = $(GOCMD) get
 GOBIN_DIR = $(PKG)
 GO_BINDINGS_DIR =  $(PKG)/go-bindings
+CONTRACTS_SRC = ../../contracts
+SOLC_BUILD_DIR = ../../build
+CONTRACTS_DEPS = ../../node_modules/@openzeppelin/contracts/,
+SOLC_ARGS = @openzeppelin/contracts=../../node_modules/@openzeppelin/contracts
 
 BINARY_FILE = $(GOBIN_DIR)/wallet
 
@@ -43,6 +47,9 @@ generate:
 	@echo "+ go generate"
 	mkdir -p $(GO_BINDINGS_DIR)/mywallet-contract
 	$(GOCMD) generate $(PKG)/...
+
+solc:
+	solc $(SOLC_ARGS) --allow-paths $(CONTRACTS_DEPS) --overwrite --combined-json abi,asm,ast,bin,bin-runtime,compact-format,devdoc,hashes,interface,metadata,opcodes,srcmap,srcmap-runtime,userdoc $(CONTRACTS_SRC)/MyWallet.sol -o $(SOLC_BUILD_DIR)
 
 codecheck: fmt lint vet
 
