@@ -10,7 +10,7 @@
 | [3](https://github.com/dat650-2019/assignments/tree/master/lab3) | 12. SEP  | PoW                              | 26. SEP  | 2 weeks   |
 | [4](https://github.com/dat650-2019/assignments/tree/master/lab4) | 03. OCT  | Into Smart Contracts             | 10. OCT  | 1 week    |
 | [5](https://github.com/dat650-2019/assignments/tree/master/lab5) | 10. OCT  | Distributed Application          | 17. OCT  | 1 week    |
-| Project                                                          | 17. OCT  | [Projects](#final-project-ideas) | 14. NOV  | 3-4 weeks |
+| Project                                                          | 17. OCT  | [Projects](https://github.com/dat650-2019/course-info/tree/master/projects) | 14. NOV  | 2 weeks |
 
 ### Contact
 
