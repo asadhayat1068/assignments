@@ -83,7 +83,6 @@ func (c Client) getBalance(address common.Address) *big.Int {
 
 func main() {
 	client := &Client{}
-	var amount *big.Int
 	client.backend = connect()
 	defer client.backend.Close()
 
@@ -138,7 +137,6 @@ func main() {
 		case 4:
 			// set value
 			fmt.Println("Enter the amount to send for set (in wei):")
-			fmt.Scanln(&amount)
 			client.scanner.Scan()
 			amount, _ := big.NewInt(0).SetString(client.scanner.Text(), 10)
 			value := "Default"

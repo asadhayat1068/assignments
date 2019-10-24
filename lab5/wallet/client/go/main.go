@@ -83,7 +83,6 @@ func (c Client) getBalance(address common.Address) *big.Int {
 
 func main() {
 	client := &Client{}
-	var amount *big.Int
 	client.backend = connect()
 	defer client.backend.Close()
 
@@ -129,7 +128,6 @@ func main() {
 			fmt.Println("Current wallet balance is:", balance)
 		case 3:
 			fmt.Println("Enter the amount to deposit (in wei):")
-			fmt.Scanln(&amount)
 			client.scanner.Scan()
 			amount, _ := big.NewInt(0).SetString(client.scanner.Text(), 10)
 			auth := client.getAuth(privateKey)
@@ -145,7 +143,6 @@ func main() {
 			fmt.Printf("Transaction 0x%x successfully created\n", tx.Hash())
 		case 4:
 			fmt.Println("Enter the amount to withdraw (in wei):")
-			fmt.Scanln(&amount)
 			client.scanner.Scan()
 			amount, _ := big.NewInt(0).SetString(client.scanner.Text(), 10)
 			auth := client.getAuth(privateKey)
@@ -163,7 +160,6 @@ func main() {
 			client.scanner.Scan()
 			recipient := common.HexToAddress(client.scanner.Text())
 			fmt.Println("Enter the amount to transfer (in wei):")
-			fmt.Scanln(&amount)
 			client.scanner.Scan()
 			amount, _ := big.NewInt(0).SetString(client.scanner.Text(), 10)
 			auth := client.getAuth(privateKey)
