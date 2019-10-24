@@ -1,0 +1,10 @@
+{
+  "extends": "solhint:recommended",
+  "plugins": [],
+  "rules": {
+    "indent": ["error", 4],
+    "bracket-align": "off",
+    "no-simple-event-func-name": "off",
+    "two-lines-top-level-separator": "off"
+  }
+}
