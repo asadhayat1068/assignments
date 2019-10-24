@@ -3,7 +3,7 @@ pragma solidity ^0.5.11;
 contract Simple {
     address public owner;
     string public value;
-    uint public lastPayment;
+    uint public balance;
 
     constructor() public {
         owner = msg.sender;
@@ -15,8 +15,8 @@ contract Simple {
     }
 
     function set(string memory newValue) public payable {
-        require(msg.value >= lastPayment);
-        lastPayment = msg.value;
+        require(msg.value >= balance);
+        balance += msg.value;
         value = newValue;
     }
 

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Simple Dapp</title>
+</head>
+
+<body>
+    <div>
+        <h1> Simple Dapp</h1>
+        <p>User balance: <span id="userBalance"></span></p>
+        <p>Contract balance: <span id="contractBalance"></span></p>
+        <p>Contract text value: <span id="contractValue"></span></p>
+        <input type="text" id="textValue" placeholder="value"></input>
+        <input type="text" id="amount" placeholder="amount"></input>
+        <button onclick="App.set()"> Set </button>
+        <button onclick="App.get()"> Get </button>
+        <button onclick="App.stop()"> Stop </button>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>
